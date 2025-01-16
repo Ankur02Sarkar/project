@@ -3,7 +3,7 @@ import { Star, Send } from 'lucide-react';
 
 interface FeedbackFormProps {
   onClose: () => void;
-  onSubmit: (feedback: any) => void;
+  onSubmit: (feedback: unknown) => void;
 }
 
 export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onClose, onSubmit }) => {
