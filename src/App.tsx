@@ -114,8 +114,8 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
             console.log("API Response:", data);
 
             setTestResult({
-              confidence: data.confidence * 100,
-              label: data.class,
+              confidence: (data?.confidence || 0) * 100,
+              label: data?.class,
               status: "success",
             });
           } catch (error) {
@@ -125,7 +125,11 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
               label: "Error processing image",
               status: "error",
             });
+          } finally {
+            setIsProcessing(false);
           }
+        } else {
+          setIsProcessing(false);
         }
       };
     } catch (error) {
@@ -135,9 +139,7 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
         label: "Error processing file",
         status: "error",
       });
-    } finally {
       setIsProcessing(false);
-      setShowFeedback(true);
     }
   };
 
@@ -231,27 +233,33 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
           )}
 
           {testResult && (
-            <div
-              className={`p-4 rounded-lg ${
-                testResult.status === "success"
-                  ? "bg-[#7CB456]/20"
-                  : "bg-[#DE4D38]/20"
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                {testResult.status === "success" ? (
-                  <CheckCircle className="w-5 h-5 text-[#7CB456]" />
-                ) : (
-                  <AlertCircle className="w-5 h-5 text-[#DE4D38]" />
-                )}
-                <span className="font-medium">{testResult.label}</span>
-              </div>
-              <div className="mt-2">
-                <div className="text-sm text-gray-400">
-                  Confidence: {testResult.confidence.toFixed(2)}%
+            <>
+              <div
+                className={`p-4 rounded-lg ${
+                  testResult.status === "success"
+                    ? "bg-[#7CB456]/20"
+                    : "bg-[#DE4D38]/20"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  {testResult.status === "success" ? (
+                    <CheckCircle className="w-5 h-5 text-[#7CB456]" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-[#DE4D38]" />
+                  )}
+                  <span className="font-medium">{testResult.label}</span>
+                </div>
+                <div className="mt-2">
+                  <div className="text-sm text-gray-400">
+                    Confidence: {testResult.confidence.toFixed(2)}%
+                  </div>
                 </div>
               </div>
-            </div>
+
+              <button className="feedbackBtn" onClick={() => setShowFeedback(true)}>
+                Add Feedback
+              </button>
+            </>
           )}
         </>
       ) : (
