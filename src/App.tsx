@@ -16,6 +16,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { FeedbackForm } from "./components/FeedbackForm";
+import axios from "axios";
 
 // Types
 interface TestResult {
@@ -52,11 +53,7 @@ const Modal = ({
   );
 };
 
-const TestingInterface = ({
-  model,
-}: {
-  model: { title: string } | unknown;
-}) => {
+const TestingInterface = ({ model }: { model: string | unknown }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
@@ -86,19 +83,62 @@ const TestingInterface = ({
 
   const handleTest = async () => {
     if (!selectedFile) return;
-
     setIsProcessing(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    setTestResult({
-      confidence: Math.random() * 100,
-      label: "Detected Issue",
-      status: Math.random() > 0.5 ? "success" : "error",
-    });
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedFile);
 
-    setIsProcessing(false);
-    setShowFeedback(true);
+      reader.onload = async () => {
+        const base64Image = reader.result.split(",")[1];
+        let apiUrl = "";
+
+        if (model === "Structural Analysis") {
+          apiUrl = "https://classify.roboflow.com/crack-damage-recognition/2";
+        } else if (model === "Safety Compliance") {
+          apiUrl = "https://classify.roboflow.com/construction-class/1";
+        }
+
+        if (apiUrl) {
+          try {
+            const response = await axios.post(apiUrl, base64Image, {
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              params: {
+                api_key: "LYnwRgyAwajnZQKPVpsJ",
+              },
+            });
+
+            const data = response.data;
+            console.log("API Response:", data);
+
+            setTestResult({
+              confidence: data.confidence * 100,
+              label: data.class,
+              status: "success",
+            });
+          } catch (error) {
+            console.error("API Error:", error);
+            setTestResult({
+              confidence: 0,
+              label: "Error processing image",
+              status: "error",
+            });
+          }
+        }
+      };
+    } catch (error) {
+      console.error("File processing error:", error);
+      setTestResult({
+        confidence: 0,
+        label: "Error processing file",
+        status: "error",
+      });
+    } finally {
+      setIsProcessing(false);
+      setShowFeedback(true);
+    }
   };
 
   const handleFeedbackSubmit = async (feedback: unknown) => {
@@ -457,7 +497,9 @@ function App() {
                       onClick={() => handleStartTesting(industry.title)}
                       className="px-6 py-3 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg font-semibold transition-all transform hover:scale-105"
                     >
-                      Test Now
+                      {industry.title === "Solar Panel Analysis"
+                        ? "Coming Soon"
+                        : "Test Now"}
                     </button>
                   </div>
                 </div>
