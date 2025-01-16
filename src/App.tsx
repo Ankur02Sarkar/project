@@ -256,7 +256,10 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
                 </div>
               </div>
 
-              <button className="feedbackBtn" onClick={() => setShowFeedback(true)}>
+              <button
+                className="feedbackBtn"
+                onClick={() => setShowFeedback(true)}
+              >
                 Add Feedback
               </button>
             </>
@@ -339,6 +342,9 @@ function App() {
   const [selectedModel, setSelectedModel] = useState<string | undefined>("");
 
   const handleStartTesting = (model?: string) => {
+    if (model === "Solar Panel Analysis") {
+      return;
+    }
     setSelectedModel(model);
     setShowTestingInterface(true);
   };
