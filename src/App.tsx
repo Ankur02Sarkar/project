@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import axios from 'axios'; 
-import { 
-  SunIcon, 
-  Menu, 
-  X, 
-  Brain, 
+import React, { useState } from "react";
+import {
+  Home,
+  Construction,
+  SunIcon,
+  Menu,
+  X,
+  Brain,
   Upload,
   BarChart,
   MessageSquare,
@@ -12,26 +13,35 @@ import {
   X as Close,
   Image as ImageIcon,
   CheckCircle,
-  AlertCircle
-} from 'lucide-react';
-import { FeedbackForm } from './components/FeedbackForm';
+  AlertCircle,
+} from "lucide-react";
+import { FeedbackForm } from "./components/FeedbackForm";
+import axios from "axios";
 
 // Types
 interface TestResult {
   confidence: number;
   label: string;
-  status: 'success' | 'error';
+  status: "success" | "error";
 }
 
 // Components
-const Modal = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
+const Modal = ({
+  isOpen,
+  onClose,
+  children,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/70" onClick={onClose} />
       <div className="relative z-10 bg-[#323232] rounded-xl p-6 max-w-4xl w-full mx-4">
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white"
         >
@@ -43,20 +53,21 @@ const Modal = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => 
   );
 };
 
-const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void }) => {
+const TestingInterface = ({ model }: { model: string | unknown }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  console.log(model);
 
   const handleFileDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
@@ -72,255 +83,337 @@ const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void
 
   const handleTest = async () => {
     if (!selectedFile) return;
-
-    const image = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(selectedFile);
-    });
-
     setIsProcessing(true);
 
-    // API call for Structural Analysis
-    axios({
-      method: "POST",
-      url: "https://classify.roboflow.com/construction-class/1",
-      params: {
-        api_key: "LYnwRgyAwajnZQKPVpsJ"
-      },
-      data: image,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
-    })
-    .then((response: any) => {
-      setTestResult({
-        confidence: response.data.confidence,
-        label: response.data.label,
-        status: 'success'
-      });
-    })
-    .catch((error: any) => {
-      setTestResult({
-        confidence: 0,
-        label: error.message,
-        status: 'error'
-      });
-    })
-    .finally(() => {
-      setIsProcessing(false);
-      setShowFeedback(true);
-    });
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedFile);
 
-    // API call for Safety Compliance
-    axios({
-      method: "POST",
-      url: "https://classify.roboflow.com/crack-damage-recognition/2",
-      params: {
-        api_key: "LYnwRgyAwajnZQKPVpsJ"
-      },
-      data: image,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
-    })
-    .then((response: any) => {
-      setTestResult({
-        confidence: response.data.confidence,
-        label: response.data.label,
-        status: 'success'
-      });
-    })
-    .catch((error: any) => {
+      reader.onload = async () => {
+        const base64Image = reader.result.split(",")[1];
+        let apiUrl = "";
+
+        if (model === "Structural Analysis") {
+          apiUrl = "https://classify.roboflow.com/crack-damage-recognition/2";
+        } else if (model === "Safety Compliance") {
+          apiUrl = "https://classify.roboflow.com/construction-class/1";
+        }
+
+        if (apiUrl) {
+          try {
+            const response = await axios.post(apiUrl, base64Image, {
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              params: {
+                api_key: "LYnwRgyAwajnZQKPVpsJ",
+              },
+            });
+
+            const data = response.data;
+            console.log("API Response:", data);
+
+            setTestResult({
+              confidence: (data?.confidence || 0) * 100,
+              label: data?.class,
+              status: "success",
+            });
+          } catch (error) {
+            console.error("API Error:", error);
+            setTestResult({
+              confidence: 0,
+              label: "Error processing image",
+              status: "error",
+            });
+          } finally {
+            setIsProcessing(false);
+          }
+        } else {
+          setIsProcessing(false);
+        }
+      };
+    } catch (error) {
+      console.error("File processing error:", error);
       setTestResult({
         confidence: 0,
-        label: error.message,
-        status: 'error'
+        label: "Error processing file",
+        status: "error",
       });
-    })
-    .finally(() => {
       setIsProcessing(false);
-      setShowFeedback(true);
-    });
+    }
+  };
+
+  const handleFeedbackSubmit = async (feedback: unknown) => {
+    console.log("Feedback submitted:", feedback);
+    // Here you would typically send the feedback to your backend
   };
 
   return (
-    <div onDrop={handleFileDrop} onDragOver={(e) => e.preventDefault()} className="p-4">
-      {showFeedback ? (
+    <div className="space-y-6">
+      {!showFeedback ? (
         <>
-          {testResult ? (
-            <div className={`p-4 rounded-lg ${testResult.status === 'success' ? 'bg-[#7CB456]/20' : 'bg-[#DE4D38]/20'}`}>
-              <div className="flex items-center space-x-2">
-                {testResult.status === 'success' ? (
-                  <CheckCircle className="w-5 h-5 text-[#7CB456]" />
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Test Your Image</h2>
+          </div>
+
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center ${
+              isDragging
+                ? "border-[#67BDEA] bg-[#67BDEA]/10"
+                : "border-gray-600"
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleFileDrop}
+          >
+            {!previewUrl ? (
+              <div className="space-y-4">
+                <ImageIcon className="w-12 h-12 mx-auto text-gray-400" />
+                <div>
+                  <p className="text-gray-300">
+                    Drag and drop your image here, or
+                  </p>
+                  <label className="mt-2 inline-block px-4 py-2 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg cursor-pointer">
+                    Browse Files
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                    />
+                  </label>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="max-h-64 mx-auto rounded-lg"
+                />
+                <button
+                  onClick={() => {
+                    setSelectedFile(null);
+                    setPreviewUrl("");
+                    setTestResult(null);
+                  }}
+                  className="text-sm text-gray-400 hover:text-white"
+                >
+                  Remove Image
+                </button>
+              </div>
+            )}
+          </div>
+
+          {selectedFile && (
+            <div className="flex justify-center">
+              <button
+                onClick={handleTest}
+                disabled={isProcessing}
+                className={`px-6 py-3 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg flex items-center space-x-2 ${
+                  isProcessing ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <span>Processing...</span>
+                  </>
                 ) : (
-                  <AlertCircle className="w-5 h-5 text-[#DE4D38]" />
+                  <>
+                    <Play className="w-4 h-4" />
+                    <span>Run Test</span>
+                  </>
                 )}
-                <span className="font-medium">{testResult.label}</span>
-              </div>
-              <div className="mt-2">
-                <div className="text-sm text-gray-400">Confidence: {testResult.confidence.toFixed(2)}%</div>
-              </div>
+              </button>
             </div>
-          ) : (
-            <p className="text-gray-400">No result available.</p>
+          )}
+
+          {testResult && (
+            <>
+              <div
+                className={`p-4 rounded-lg ${
+                  testResult.status === "success"
+                    ? "bg-[#7CB456]/20"
+                    : "bg-[#DE4D38]/20"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  {testResult.status === "success" ? (
+                    <CheckCircle className="w-5 h-5 text-[#7CB456]" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-[#DE4D38]" />
+                  )}
+                  <span className="font-medium">{testResult.label}</span>
+                </div>
+                <div className="mt-2">
+                  <div className="text-sm text-gray-400">
+                    Confidence: {testResult.confidence.toFixed(2)}%
+                  </div>
+                </div>
+              </div>
+
+              <button
+                className="feedbackBtn"
+                onClick={() => setShowFeedback(true)}
+              >
+                Add Feedback
+              </button>
+            </>
           )}
         </>
       ) : (
-        <>
-          <div className="space-y-4">
-            <ImageIcon className="w-12 h-12 mx-auto text-gray-400" />
-            <div>
-              <p className="text-gray-300">Drag and drop your image here, or</p>
-              <label className="mt-2 inline-block px-4 py-2 bg-[#67The content has been saved to `src/App.tsx`, but there are still several issues that need to be addressed. Here’s a summary of the problems and the steps to fix them:
-
-### Issues to Address:
-1. **Cannot find module './components/Home' or './components/Construction'**: Ensure that these components exist in the specified path. If they do not exist, either create them or remove the imports.
-2. **'FeedbackForm' is defined but never used**: If you intend to use `FeedbackForm`, ensure it is included in the JSX. If not, remove the import.
-3. **All destructured elements are unused**: The destructured parameters in the `Modal` component are not being used. If they are not needed, remove them.
-4. **Implicit 'any' type for parameters**: Specify types for the parameters in the `.then` and `.catch` functions to avoid implicit `any` types.
-5. **Unused Variables**: Review the code to remove or utilize any defined but unused variables.
-
-### Next Steps:
-1. **Check for Missing Components**: Verify that the `Home` and `Construction` components exist in the `./components` directory.
-2. **Fix Unused Variables**: Review the code to remove or utilize any defined but unused variables.
-3. **Specify Types**: Update the `.then` and `.catch` functions to specify types for the parameters.
-
-I will now proceed to make these changes directly in the `src/App.tsx` file. 
-
-<create_file>
-<path>src/App.tsx</path>
-<content>
-import React, { useState } from 'react';
-import axios from 'axios'; 
-import { 
-  SunIcon, 
-  Menu, 
-  X, 
-  Brain, 
-  Upload,
-  BarChart,
-  MessageSquare,
-  Play,
-  X as Close,
-  Image as ImageIcon,
-  CheckCircle,
-  AlertCircle
-} from 'lucide-react';
-import { FeedbackForm } from './components/FeedbackForm'; // Ensure this is used or remove it
-import Home from './components/Home'; // Ensure this path is correct
-import Construction from './components/Construction'; // Ensure this path is correct
-
-// Types
-interface TestResult {
-  confidence: number;
-  label: string;
-  status: 'success' | 'error';
-}
-
-// Components
-const Modal = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative z-10 bg-[#323232] rounded-xl p-6 max-w-4xl w-full mx-4">
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white"
-        >
-          <Close className="w-6 h-6" />
-        </button>
-        {children}
-      </div>
+        <FeedbackForm
+          onClose={() => setShowFeedback(false)}
+          onSubmit={handleFeedbackSubmit}
+        />
+      )}
     </div>
   );
 };
 
-const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void }) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [isDragging, setIsDragging] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [testResult, setTestResult] = useState<TestResult | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+// Constants
+const industries = [
+  {
+    title: "Structural Analysis",
+    icon: <Home className="w-12 h-12 mb-4 text-[#67BDEA]" />,
+    description: "Advanced wall surface crack detection for building integrity",
+    image:
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200",
+    benefits: ["Detect hairline cracks"],
+  },
+  {
+    title: "Safety Compliance",
+    icon: <Construction className="w-12 h-12 mb-4 text-[#67BDEA]" />,
+    description: "Real-time worker safety helmet compliance monitoring",
+    image:
+      "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&q=80&w=1200",
+    benefits: [
+      "Real-time safety detection",
+      "OSHA compliance",
+      "Enhanced safety culture",
+    ],
+  },
+  {
+    title: "Solar Panel Analysis",
+    icon: <SunIcon className="w-12 h-12 mb-4 text-[#67BDEA]" />,
+    description:
+      "AI-powered dust and crack detection for solar panel optimization",
+    image:
+      "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=1200",
+    benefits: [
+      "Detect microcracks and anomalies",
+      "Monitor panel cleanliness",
+      "Reduce maintenance downtime",
+    ],
+  },
+];
 
-  const handleFileDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+const features = [
+  {
+    icon: <Brain className="w-8 h-8 text-[#67BDEA]" />,
+    title: "Advanced AI Models",
+    description:
+      "State-of-the-art machine learning models trained on diverse datasets",
+  },
+  {
+    icon: <Upload className="w-8 h-8 text-[#67BDEA]" />,
+    title: "Easy Integration",
+    description: "Seamless API integration with your existing systems",
+  },
+  {
+    icon: <BarChart className="w-8 h-8 text-[#67BDEA]" />,
+    title: "Detailed Analytics",
+    description: "Comprehensive insights and performance metrics",
+  },
+  {
+    icon: <MessageSquare className="w-8 h-8 text-[#67BDEA]" />,
+    title: "24/7 Support",
+    description: "Round-the-clock technical assistance and guidance",
+  },
+];
+
+function App() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showTestingInterface, setShowTestingInterface] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<string | undefined>("");
+
+  const handleStartTesting = (model?: string) => {
+    if (model === "Solar Panel Analysis") {
+      return;
     }
+    setSelectedModel(model);
+    setShowTestingInterface(true);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  };
+  return (
+    <div className="min-h-screen bg-[#000000] text-[#FEFEFE]">
+      {/* Header */}
+      <header className="fixed w-full z-50 bg-[#000000]/95 backdrop-blur-sm border-b border-[#323232]">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-2">
+              <img src="/logo.png" alt="Chainfly AI" className="w-10 h-10" />
+              <span className="text-xl font-bold">Chainfly AI</span>
+            </div>
 
-  const handleTest = async () => {
-    if (!selectedFile) return;
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-8">
+              <a
+                href="#features"
+                className="text-gray-300 hover:text-[#67BDEA] transition-colors"
+              >
+                Features
+              </a>
+              <a
+                href="#models"
+                className="text-gray-300 hover:text-[#67BDEA] transition-colors"
+              >
+                Models
+              </a>
+              <a
+                href=".About.tsx"
+                className="text-gray-300 hover:text-[#67BDEA] transition-colors"
+              >
+                About
+              </a>
+            </nav>
 
-    const image = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(selectedFile);
-    });
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden p-2"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X /> : <Menu />}
+            </button>
+          </div>
 
-    setIsProcessing(true);
-
-    // API call for Structural Analysis
-    axios({
-      method: "POST",
-      url: "https://classify.roboflow.com/construction-class/1",
-      params: {
-        api_key: "LYnwRgyAwajnZQKPVpsJ"
-      },
-      data: image,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
-    })
-    .then((response: any) => {
-      setTestResult({
-        confidence: response.data.confidence,
-        label: response.data.label,
-        status: 'success'
-      });
-    })
-    .catch((error: any) => {
-      setTestResult({
-        confidence: 0,
-        label: error.message,
-        status: 'error'
-      });
-    })
-    .finally(() => {
-      setIsProcessing(false);
-      setShowFeedback(true);
-    });
-
-    // API call for Safety Compliance
-    axios({
-      method: "POST",
-      url: "https://classify.roboflow.com/crack-damage-recognition/2",
-      params: {
-        api_key: "LYnwRgyAwajnZQKPVpsJ"
-      },
-      data: image,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
-    })
+          {/* Mobile Navigation */}
+          {isMenuOpen && (
+            <nav className="md:hidden py-4 space-y-4">
+              <a
+                href="#features"
+                className="block text-gray-300 hover:text-[#67BDEA] transition-colors"
+              >
+                Features
+              </a>
+              <a
+                href="#models"
+                className="block text-gray-300 hover:text-[#67BDEA] transition-colors"
+              >
+                Models
+              </a>
+              <a
+                href="#about"
+                className="block text-gray-300 hover:text-[#67BDEA] transition-colors"
+              >
+                About
+              </a>
+              <button
+                onClick={() => (window.location.href = "/about")} // Adjust the navigation as needed
                 className="px-6 py-3 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg font-semibold transition-all transform hover:scale-105"
               >
                 Learn More
@@ -334,7 +427,7 @@ const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-[#000000]/95 via-[#000000]/80 to-[#000000]" />
-          <div className="absolute inset-0 bg-[url('/public/bg.jpg')] bg-cover bg-center opacity-30" />
+          <div className="absolute inset-0 bg-[url('/bg.jpg')] bg-cover bg-center opacity-30" />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-32 text-center">
           <div className="animate-float">
@@ -347,10 +440,11 @@ const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void
             </h1>
           </div>
           <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto mb-8">
-            Experience the power of cutting-edge AI solutions for diverse industries.
+            Experience the power of cutting-edge AI solutions for diverse
+            industries.
           </p>
           <button
-            onClick={() => window.location.href = '/about'} // Adjust the navigation as needed
+            onClick={() => (window.location.href = "/about")} // Adjust the navigation as needed
             className="px-6 py-3 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg font-semibold transition-all transform hover:scale-105"
           >
             Learn More
@@ -366,7 +460,10 @@ const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="p-6 bg-[#000000] rounded-xl hover:scale-105 transition-transform cursor-pointer">
+              <div
+                key={index}
+                className="p-6 bg-[#000000] rounded-xl hover:scale-105 transition-transform cursor-pointer"
+              >
                 <div className="mb-4">{feature.icon}</div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-gray-400">{feature.description}</p>
@@ -399,7 +496,9 @@ const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void
                 <div className="relative z-10 p-6">
                   <div className="flex flex-col items-center text-center">
                     {industry.icon}
-                    <h3 className="text-2xl font-bold mb-3">{industry.title}</h3>
+                    <h3 className="text-2xl font-bold mb-3">
+                      {industry.title}
+                    </h3>
                     <p className="text-gray-400 mb-4">{industry.description}</p>
                     <ul className="space-y-2 mb-6">
                       {industry.benefits.map((benefit, idx) => (
@@ -409,10 +508,12 @@ const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void
                       ))}
                     </ul>
                     <button
-                      onClick={() => handleStartTesting(industry)}
+                      onClick={() => handleStartTesting(industry.title)}
                       className="px-6 py-3 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg font-semibold transition-all transform hover:scale-105"
                     >
-                      Test Now
+                      {industry.title === "Solar Panel Analysis"
+                        ? "Coming Soon"
+                        : "Test Now"}
                     </button>
                   </div>
                 </div>
@@ -429,9 +530,10 @@ const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void
             Ready to Transform Your Operations?
           </h2>
           <p className="text-xl text-gray-400 mb-8">
-            Start testing our AI models today and experience the future of industry automation.
+            Start testing our AI models today and experience the future of
+            industry automation.
           </p>
-          <button 
+          <button
             onClick={() => handleStartTesting()}
             className="px-8 py-4 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg text-lg font-semibold transition-all transform hover:scale-105"
           >
@@ -445,10 +547,10 @@ const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-            <div className="flex items-center space-x-2">
-              <img src="/logo.png" alt="Chainfly AI" className="w-10 h-10" />
-              <span className="text-xl font-bold">Chainfly AI</span>
-            </div>
+              <div className="flex items-center space-x-2">
+                <img src="/logo.png" alt="Chainfly AI" className="w-10 h-10" />
+                <span className="text-xl font-bold">Chainfly AI</span>
+              </div>
               <p className="text-gray-400">
                 Transforming industries with advanced AI solutions.
               </p>
@@ -456,10 +558,14 @@ const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void
             <div>
               <h4 className="text-lg font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400">
-                <li className="cursor-pointer hover:text-[#67BDEA]">Features</li>
+                <li className="cursor-pointer hover:text-[#67BDEA]">
+                  Features
+                </li>
                 <li className="cursor-pointer hover:text-[#67BDEA]">Models</li>
                 <li className="cursor-pointer hover:text-[#67BDEA]">Pricing</li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">Documentation</li>
+                <li className="cursor-pointer hover:text-[#67BDEA]">
+                  Documentation
+                </li>
               </ul>
             </div>
             <div>
@@ -474,21 +580,30 @@ const TestingInterface = ({ model, onClose }: { model?: any; onClose: () => void
             <div>
               <h4 className="text-lg font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-gray-400">
-                <li className="cursor-pointer hover:text-[#67BDEA]">Privacy Policy</li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">Terms of Service</li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">Cookie Policy</li>
+                <li className="cursor-pointer hover:text-[#67BDEA]">
+                  Privacy Policy
+                </li>
+                <li className="cursor-pointer hover:text-[#67BDEA]">
+                  Terms of Service
+                </li>
+                <li className="cursor-pointer hover:text-[#67BDEA]">
+                  Cookie Policy
+                </li>
               </ul>
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-[#323232] text-center text-gray-400">
-            <p>© 2024 Chainfly AI. All rights reserved.</p>
+            <p>©️ 2024 Chainfly AI. All rights reserved.</p>
           </div>
         </div>
       </footer>
 
       {/* Testing Interface Modal */}
-      <Modal isOpen={showTestingInterface} onClose={() => setShowTestingInterface(false)}>
-        <TestingInterface model={selectedModel} onClose={() => setShowTestingInterface(false)} />
+      <Modal
+        isOpen={showTestingInterface}
+        onClose={() => setShowTestingInterface(false)}
+      >
+        <TestingInterface model={selectedModel} />
       </Modal>
     </div>
   );

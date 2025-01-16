@@ -53,3 +53,11 @@
     }
   }
 }
+
+.feedbackBtn{
+  border: 1px solid #FEFEFE;
+  border-radius: 5px;
+  padding: 1rem;
+  color: #000;
+  background-color: #e2e2e2;
+}
