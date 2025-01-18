@@ -51,7 +51,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onClose, onSubmit })
             rows={4}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="w-full px-4 py-3 bg-[#323232] border border-gray-600 rounded-lg focus:ring-2 focus:ring-[#67BDEA] focus:border-transparent text-white placeholder-gray-400"
+            className="w-full px-4 py-3 bg-[#323232] border border-gray-600 rounded-lg focus:ring-2 focus:ring-[#a78bfa] focus:border-transparent text-white placeholder-gray-400"
             placeholder="Tell us what you think..."
           />
         </div>
@@ -67,7 +67,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onClose, onSubmit })
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-3 bg-[#67BDEA] hover:bg-[#5aa8d3] rounded-lg text-black font-semibold flex items-center space-x-2 transition-all transform hover:scale-105"
+            className="px-6 py-3 bg-[#a78bfa] hover:bg-[#8b5cf6] rounded-lg text-black font-semibold flex items-center space-x-2 transition-all transform hover:scale-105"
           >
             {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />

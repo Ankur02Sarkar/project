@@ -159,7 +159,7 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center ${
               isDragging
-                ? "border-[#67BDEA] bg-[#67BDEA]/10"
+                ? "border-[#c026d3] bg-#c026d3]/10"
                 : "border-gray-600"
             }`}
             onDragOver={(e) => {
@@ -176,7 +176,7 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
                   <p className="text-gray-300">
                     Drag and drop your image here, or
                   </p>
-                  <label className="mt-2 inline-block px-4 py-2 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg cursor-pointer">
+                  <label className="mt-2 inline-block px-4 py-2 bg-[#8b5cf6] hover:bg-[#a78bfa] text-black rounded-lg cursor-pointer">
                     Browse Files
                     <input
                       type="file"
@@ -213,7 +213,7 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
               <button
                 onClick={handleTest}
                 disabled={isProcessing}
-                className={`px-6 py-3 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg flex items-center space-x-2 ${
+                className={`px-6 py-3 bg-[#8b5cf6] hover:bg-[#a78bfa] text-black rounded-lg flex items-center space-x-2 ${
                   isProcessing ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
@@ -279,7 +279,7 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
 const industries = [
   {
     title: "Structural Analysis",
-    icon: <Home className="w-12 h-12 mb-4 text-[#67BDEA]" />,
+    icon: <Home className="w-12 h-12 mb-4 text-[#a78bfa]" />,
     description: "Advanced wall surface crack detection for building integrity",
     image:
       "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200",
@@ -287,7 +287,7 @@ const industries = [
   },
   {
     title: "Safety Compliance",
-    icon: <Construction className="w-12 h-12 mb-4 text-[#67BDEA]" />,
+    icon: <Construction className="w-12 h-12 mb-4 text-[#a78bfa]" />,
     description: "Real-time worker safety helmet compliance monitoring",
     image:
       "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&q=80&w=1200",
@@ -299,7 +299,7 @@ const industries = [
   },
   {
     title: "Solar Panel Analysis",
-    icon: <SunIcon className="w-12 h-12 mb-4 text-[#67BDEA]" />,
+    icon: <SunIcon className="w-12 h-12 mb-4 text-[#a78bfa]" />,
     description:
       "AI-powered dust and crack detection for solar panel optimization",
     image:
@@ -314,23 +314,23 @@ const industries = [
 
 const features = [
   {
-    icon: <Brain className="w-8 h-8 text-[#67BDEA]" />,
+    icon: <Brain className="w-8 h-8 text-[#a78bfa]" />,
     title: "Advanced AI Models",
     description:
       "State-of-the-art machine learning models trained on diverse datasets",
   },
   {
-    icon: <Upload className="w-8 h-8 text-[#67BDEA]" />,
+    icon: <Upload className="w-8 h-8 text-[#a78bfa]" />,
     title: "Easy Integration",
     description: "Seamless API integration with your existing systems",
   },
   {
-    icon: <BarChart className="w-8 h-8 text-[#67BDEA]" />,
+    icon: <BarChart className="w-8 h-8 text-[#a78bfa]" />,
     title: "Detailed Analytics",
     description: "Comprehensive insights and performance metrics",
   },
   {
-    icon: <MessageSquare className="w-8 h-8 text-[#67BDEA]" />,
+    icon: <MessageSquare className="w-8 h-8 text-[#a78bfa]" />,
     title: "24/7 Support",
     description: "Round-the-clock technical assistance and guidance",
   },
@@ -364,19 +364,19 @@ function App() {
             <nav className="hidden md:flex space-x-8">
               <a
                 href="#features"
-                className="text-gray-300 hover:text-[#67BDEA] transition-colors"
+                className="text-gray-300 hover:text-[#a78bfa] transition-colors"
               >
                 Features
               </a>
               <a
                 href="#models"
-                className="text-gray-300 hover:text-[#67BDEA] transition-colors"
+                className="text-gray-300 hover:text-[#a78bfa] transition-colors"
               >
                 Models
               </a>
               <a
                 href=".About.tsx"
-                className="text-gray-300 hover:text-[#67BDEA] transition-colors"
+                className="text-gray-300 hover:text-[#a78bfa] transition-colors"
               >
                 About
               </a>
@@ -396,25 +396,25 @@ function App() {
             <nav className="md:hidden py-4 space-y-4">
               <a
                 href="#features"
-                className="block text-gray-300 hover:text-[#67BDEA] transition-colors"
+                className="block text-gray-300 hover:text-[#a78bfa] transition-colors"
               >
                 Features
               </a>
               <a
                 href="#models"
-                className="block text-gray-300 hover:text-[#67BDEA] transition-colors"
+                className="block text-gray-300 hover:text-[#a78bfa] transition-colors"
               >
                 Models
               </a>
               <a
                 href="#about"
-                className="block text-gray-300 hover:text-[#67BDEA] transition-colors"
+                className="block text-gray-300 hover:text-[#a78bfa] transition-colors"
               >
                 About
               </a>
               <button
                 onClick={() => (window.location.href = "/about")} // Adjust the navigation as needed
-                className="px-6 py-3 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg font-semibold transition-all transform hover:scale-105"
+                className="px-6 py-3 bg-[#a78bfa] hover:bg-[#8b5cf6] text-black rounded-lg font-semibold transition-all transform hover:scale-105"
               >
                 Learn More
               </button>
@@ -431,7 +431,7 @@ function App() {
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-32 text-center">
           <div className="animate-float">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-gradient bg-gradient-to-r from-[#F7EC38] via-[#67BDEA] to-[#DE4D38] bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-gradient bg-gradient-to-r from-[#F7EC38] via-[#a78bfa] to-[#DE4D38] bg-clip-text text-transparent">
               Welcome to Chainfly AI
               <br />
               <span className="text-3xl md:text-5xl lg:text-6xl">
@@ -445,7 +445,7 @@ function App() {
           </p>
           <button
             onClick={() => (window.location.href = "/about")} // Adjust the navigation as needed
-            className="px-6 py-3 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg font-semibold transition-all transform hover:scale-105"
+            className="px-6 py-3 bg-[#a78bfa] hover:bg-[#8b5cf6] text-black rounded-lg font-semibold transition-all transform hover:scale-105"
           >
             Learn More
           </button>
@@ -455,7 +455,7 @@ function App() {
       {/* Features Section */}
       <section id="features" className="py-20 bg-[#323232]">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 animate-gradient bg-gradient-to-r from-[#F7EC38] via-[#67BDEA] to-[#DE4D38] bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold text-center mb-16 animate-gradient bg-gradient-to-r from-[#F7EC38] via-[#a78bfa] to-[#DE4D38] bg-clip-text text-transparent">
             Why Choose Chainfly?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -476,14 +476,14 @@ function App() {
       {/* Models Section */}
       <section id="models" className="py-20 bg-[#000000]">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 animate-gradient bg-gradient-to-r from-[#F7EC38] via-[#67BDEA] to-[#DE4D38] bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold text-center mb-16 animate-gradient bg-gradient-to-r from-[#F7EC38] via-[#a78bfa] to-[#DE4D38] bg-clip-text text-transparent">
             AI Models
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {industries.map((industry, index) => (
               <div
                 key={index}
-                className="group relative overflow-hidden rounded-xl bg-[#323232] transition-all duration-300 hover:shadow-2xl hover:shadow-[#67BDEA]/20"
+                className="group relative overflow-hidden rounded-xl bg-[#323232] transition-all duration-300 hover:shadow-2xl hover:shadow-[#a78bfa]/20"
               >
                 <div className="aspect-video overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-t from-[#000000] to-transparent z-10" />
@@ -509,7 +509,7 @@ function App() {
                     </ul>
                     <button
                       onClick={() => handleStartTesting(industry.title)}
-                      className="px-6 py-3 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg font-semibold transition-all transform hover:scale-105"
+                      className="px-6 py-3 bg-[#a78bfa] hover:bg-[#8b5cf6] text-black rounded-lg font-semibold transition-all transform hover:scale-105"
                     >
                       {industry.title === "Solar Panel Analysis"
                         ? "Coming Soon"
@@ -535,7 +535,7 @@ function App() {
           </p>
           <button
             onClick={() => handleStartTesting()}
-            className="px-8 py-4 bg-[#67BDEA] hover:bg-[#5aa8d3] text-black rounded-lg text-lg font-semibold transition-all transform hover:scale-105"
+            className="px-8 py-4 bg-[#a78bfa] hover:bg-[#8b5cf6] text-black rounded-lg text-lg font-semibold transition-all transform hover:scale-105"
           >
             Get Started Free
           </button>
@@ -558,12 +558,12 @@ function App() {
             <div>
               <h4 className="text-lg font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400">
-                <li className="cursor-pointer hover:text-[#67BDEA]">
+                <li className="cursor-pointer hover:text-[#a78bfa]">
                   Features
                 </li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">Models</li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">Pricing</li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">
+                <li className="cursor-pointer hover:text-[#a78bfa]">Models</li>
+                <li className="cursor-pointer hover:text-[#a78bfa]">Pricing</li>
+                <li className="cursor-pointer hover:text-[#a78bfa]">
                   Documentation
                 </li>
               </ul>
@@ -571,22 +571,22 @@ function App() {
             <div>
               <h4 className="text-lg font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-gray-400">
-                <li className="cursor-pointer hover:text-[#67BDEA]">About</li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">Blog</li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">Careers</li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">Contact</li>
+                <li className="cursor-pointer hover:text-[#a78bfa]">About</li>
+                <li className="cursor-pointer hover:text-[#a78bfa]">Blog</li>
+                <li className="cursor-pointer hover:text-[#a78bfa]">Careers</li>
+                <li className="cursor-pointer hover:text-[#a78bfa]">Contact</li>
               </ul>
             </div>
             <div>
               <h4 className="text-lg font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-gray-400">
-                <li className="cursor-pointer hover:text-[#67BDEA]">
+                <li className="cursor-pointer hover:text-[#a78bfa]">
                   Privacy Policy
                 </li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">
+                <li className="cursor-pointer hover:text-[#a78bfa]">
                   Terms of Service
                 </li>
-                <li className="cursor-pointer hover:text-[#67BDEA]">
+                <li className="cursor-pointer hover:text-[#a78bfa]">
                   Cookie Policy
                 </li>
               </ul>
