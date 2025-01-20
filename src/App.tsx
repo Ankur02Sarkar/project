@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { FeedbackForm } from "./components/FeedbackForm";
 import axios from "axios";
+import { jsPDF } from "jspdf";
 
 // Types
 interface TestResult {
@@ -148,6 +149,22 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
     // Here you would typically send the feedback to your backend
   };
 
+  const downloadTestResult = () => {
+    if (!testResult) return;
+
+    const { confidence, label } = testResult;
+    const doc = new jsPDF();
+
+    doc.setFontSize(20);
+    doc.text("Test Result", 10, 10);
+    doc.setFontSize(12);
+    doc.text(`Label: ${label}`, 10, 30);
+    doc.text(`Confidence: ${confidence.toFixed(2)}%`, 10, 40);
+    doc.text(`Status: ${testResult.status}`, 10, 50);
+
+    doc.save("test_result.pdf");
+};
+
   return (
     <div className="space-y-6">
       {!showFeedback ? (
@@ -251,10 +268,19 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
                 </div>
                 <div className="mt-2">
                   <div className="text-sm text-gray-400">
-                    Confidence: {testResult.confidence.toFixed(2)}%
+                    Confidence: {testResult.confidence.toFixed(50)}%
+                                       
+
                   </div>
                 </div>
               </div>
+
+              <button
+                onClick={downloadTestResult}
+                className="px-6 py-3 bg-[#8b5cf6] hover:bg-[#a78bfa] text-black rounded-lg"
+              >
+                Download Result
+              </button>
 
               <button
                 className="feedbackBtn"
