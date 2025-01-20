@@ -4,14 +4,14 @@
 
 @layer base {
   :root {
-    --color-primary: #000000;
+    --color-primary: #f8f2f2;
     --color-secondary: #323232;
     --color-yellow: #F7EC38;
     --color-red: #DE4D38;
     --color-blue: #c026d3;
     --color-brown: #894C43;
     --color-green: #7CB456;
-    --color-white: #FEFEFE;
+    --color-white: #0f0f0f;
   }
 
   body {

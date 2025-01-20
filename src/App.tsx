@@ -94,7 +94,7 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
         let apiUrl = "";
 
         if (model === "Structural Analysis") {
-          apiUrl = "https://classify.roboflow.com/crack-damage-recognition/2";
+          apiUrl =  "https://classify.roboflow.com/crack-damage-recognition/2";
         } else if (model === "Safety Compliance") {
           apiUrl = "https://classify.roboflow.com/construction-class/1";
         }
@@ -106,7 +106,7 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
                 "Content-Type": "application/x-www-form-urlencoded",
               },
               params: {
-                api_key: "LYnwRgyAwajnZQKPVpsJ",
+                api_key: "2AVAThLKyR4OcKPFbHso",
               },
             });
 
