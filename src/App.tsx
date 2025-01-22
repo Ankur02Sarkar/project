@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { FeedbackForm } from "./components/FeedbackForm";
 import axios from "axios";
-import { jsPDF } from "jspdf";
+import { jsPDF } from "jspdf"; // Import jsPDF
 
 // Types
 interface TestResult {
@@ -163,7 +163,7 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
     doc.text(`Status: ${testResult.status}`, 10, 50);
 
     doc.save("test_result.pdf");
-};
+  };
 
   return (
     <div className="space-y-6">
@@ -269,8 +269,6 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
                 <div className="mt-2">
                   <div className="text-sm text-gray-400">
                     Confidence: {testResult.confidence.toFixed(50)}%
-                                       
-
                   </div>
                 </div>
               </div>
