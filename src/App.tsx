@@ -26,7 +26,7 @@ interface TestResult {
   status: "success" | "error";
 }
 
-// Components
+// Modal Component
 const Modal = ({
   isOpen,
   onClose,
@@ -54,105 +54,78 @@ const Modal = ({
   );
 };
 
-const TestingInterface = ({ model }: { model: string | unknown }) => {
+const TestingInterface = ({ model }: { model: string | null }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  console.log(model);
 
-  const handleFileDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    const file = e.dataTransfer.files[0];
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  };
-
   const handleTest = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !model) return;
     setIsProcessing(true);
 
-    try {
-      const reader = new FileReader();
-      reader.readAsDataURL(selectedFile);
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedFile);
 
-      reader.onload = async () => {
-        const base64Image = reader.result.split(",")[1];
-        let apiUrl = "";
+    reader.onload = async () => {
+      const base64Image = reader.result?.toString().split(",")[1] || "";
+      let apiUrl = "";
 
-        if (model === "Structural Analysis") {
-          apiUrl =  "https://classify.roboflow.com/crack-damage-recognition/2";
-        } else if (model === "Safety Compliance") {
-          apiUrl = "https://classify.roboflow.com/construction-class/1";
-        }
-
-        if (apiUrl) {
-          try {
-            const response = await axios.post(apiUrl, base64Image, {
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              params: {
-                api_key: "2AVAThLKyR4OcKPFbHso",
-              },
-            });
-
-            const data = response.data;
-            console.log("API Response:", data);
-
-            setTestResult({
-              confidence: (data?.confidence || 0) * 100,
-              label: data?.class,
-              status: "success",
-            });
-          } catch (error) {
-            console.error("API Error:", error);
-            setTestResult({
-              confidence: 0,
-              label: "Error processing image",
-              status: "error",
-            });
-          } finally {
-            setIsProcessing(false);
-          }
-        } else {
+      switch (model) {
+        case "Structural Analysis":
+          apiUrl =
+            "https://detect.roboflow.com/infer/workflows/project-jxvu8/custom-workflow";
+          break;
+        case "Safety Compliance":
+          apiUrl =
+            "https://detect.roboflow.com/infer/workflows/project-jxvu8/custom-workflow-2";
+          break;
+        default:
           setIsProcessing(false);
-        }
-      };
-    } catch (error) {
-      console.error("File processing error:", error);
-      setTestResult({
-        confidence: 0,
-        label: "Error processing file",
-        status: "error",
-      });
-      setIsProcessing(false);
-    }
-  };
+          return;
+      }
 
-  const handleFeedbackSubmit = async (feedback: unknown) => {
-    console.log("Feedback submitted:", feedback);
-    // Here you would typically send the feedback to your backend
+      try {
+        const response = await axios.post(
+          apiUrl,
+          { image: base64Image },
+          {
+            headers: { "Content-Type": "application/json" },
+            params: { api_key: "4Gdqy3MPPMplaXVVr1yG" },
+          }
+        );
+
+        const data = response.data;
+        setTestResult({
+          confidence: (data?.confidence || 0) * 100,
+          label: data?.class || "Unknown",
+          status: "success",
+        });
+      } catch (error) {
+        
+        console.error("API Error:", error);
+        setTestResult({
+          confidence: 0,
+          label: "Error processing image",
+          status: "error",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    };
   };
 
   const downloadTestResult = () => {
     if (!testResult) return;
-
-    const { confidence, label } = testResult;
+    const { confidence, label, status } = testResult;
     const doc = new jsPDF();
 
     doc.setFontSize(20);
@@ -160,125 +133,96 @@ const TestingInterface = ({ model }: { model: string | unknown }) => {
     doc.setFontSize(12);
     doc.text(`Label: ${label}`, 10, 30);
     doc.text(`Confidence: ${confidence.toFixed(2)}%`, 10, 40);
-    doc.text(`Status: ${testResult.status}`, 10, 50);
+    doc.text(`Status: ${status}`, 10, 50);
 
     doc.save("test_result.pdf");
   };
 
   return (
     <div className="space-y-6">
-      {!showFeedback ? (
-        <>
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Test Your Image</h2>
-          </div>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Test Your Image</h2>
+      </div>
 
-          <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center ${
-              isDragging
-                ? "border-[#c026d3] bg-#c026d3]/10"
-                : "border-gray-600"
+      <div className="border-2 border-dashed rounded-lg p-8 text-center border-gray-600">
+        {!previewUrl ? (
+          <div className="space-y-4">
+            <ImageIcon className="w-12 h-12 mx-auto text-gray-400" />
+            <label className="inline-block px-4 py-2 bg-[#8b5cf6] hover:bg-[#a78bfa] text-black rounded-lg cursor-pointer">
+              Browse Files
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileSelect}
+              />
+            </label>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="max-h-64 mx-auto rounded-lg"
+            />
+            <button
+              onClick={() => {
+                setSelectedFile(null);
+                setPreviewUrl("");
+                setTestResult(null);
+              }}
+              className="text-sm text-gray-400 hover:text-white"
+            >
+              Remove Image
+            </button>
+          </div>
+        )}
+      </div>
+
+      {selectedFile && (
+        <div className="flex justify-center">
+          <button
+            onClick={handleTest}
+            disabled={isProcessing}
+            className={`px-6 py-3 bg-[#8b5cf6] hover:bg-[#a78bfa] text-black rounded-lg ${
+              isProcessing ? "opacity-50 cursor-not-allowed" : ""
             }`}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={handleFileDrop}
           >
-            {!previewUrl ? (
-              <div className="space-y-4">
-                <ImageIcon className="w-12 h-12 mx-auto text-gray-400" />
-                <div>
-                  <p className="text-gray-300">
-                    Drag and drop your image here, or
-                  </p>
-                  <label className="mt-2 inline-block px-4 py-2 bg-[#8b5cf6] hover:bg-[#a78bfa] text-black rounded-lg cursor-pointer">
-                    Browse Files
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                    />
-                  </label>
-                </div>
-              </div>
+            {isProcessing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                <span>Processing...</span>
+              </>
             ) : (
-              <div className="space-y-4">
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="max-h-64 mx-auto rounded-lg"
-                />
-                <button
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setPreviewUrl("");
-                    setTestResult(null);
-                  }}
-                  className="text-sm text-gray-400 hover:text-white"
-                >
-                  Remove Image
-                </button>
-              </div>
+              <>
+                <Play className="w-4 h-4" />
+                <span>Run Test</span>
+              </>
             )}
+          </button>
+        </div>
+      )}
+
+      {testResult && (
+        <div className="p-4 rounded-lg bg-gray-800">
+          <div className="flex items-center space-x-2">
+            {testResult.status === "success" ? (
+              <CheckCircle className="w-5 h-5 text-green-500" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-red-500" />
+            )}
+            <span className="font-medium">{testResult.label}</span>
+          </div>
+          <div className="mt-2 text-gray-400">
+            Confidence: {testResult.confidence.toFixed(2)}%
           </div>
 
-          {selectedFile && (
-            <div className="flex justify-center">
-              <button
-                onClick={handleTest}
-                disabled={isProcessing}
-                className={`px-6 py-3 bg-[#8b5cf6] hover:bg-[#a78bfa] text-black rounded-lg flex items-center space-x-2 ${
-                  isProcessing ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                {isProcessing ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    <span>Processing...</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4" />
-                    <span>Run Test</span>
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-
-          {testResult && (
-            <>
-              <div
-                className={`p-4 rounded-lg ${
-                  testResult.status === "success"
-                    ? "bg-[#7CB456]/20"
-                    : "bg-[#DE4D38]/20"
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  {testResult.status === "success" ? (
-                    <CheckCircle className="w-5 h-5 text-[#7CB456]" />
-                  ) : (
-                    <AlertCircle className="w-5 h-5 text-[#DE4D38]" />
-                  )}
-                  <span className="font-medium">{testResult.label}</span>
-                </div>
-                <div className="mt-2">
-                  <div className="text-sm text-gray-400">
-                    Confidence: {testResult.confidence.toFixed(50)}%
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={downloadTestResult}
-                className="px-6 py-3 bg-[#8b5cf6] hover:bg-[#a78bfa] text-black rounded-lg"
-              >
-                Download Result
-              </button>
+          <button
+            onClick={downloadTestResult}
+            className="mt-4 px-6 py-3 bg-[#8b5cf6] hover:bg-[#a78bfa] text-black rounded-lg"
+          >
+            Download Result
+          </button>
 
               <button
                 className="feedbackBtn"
